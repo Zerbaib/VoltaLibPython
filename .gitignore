@@ -1,0 +1,8 @@
+.env
+token.json
+
+__pycache__/
+.venv/
+
+config/
+VoltaLib.egg-info/
