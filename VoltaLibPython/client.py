@@ -19,6 +19,8 @@ class VoltaClient:
         self.refresh_interval = int(self.token_data.get("expires_in", 3600))
         self._refresh_counter = self.refresh_interval
         self._refresh_timer = None
+        self._save_tick = 0
+        self._save_interval = 30  # seconds
         self._start_background_refresh()
 
     def _refresh_token(self):
@@ -54,6 +56,14 @@ class VoltaClient:
 
     def _background_refresh_tick(self):
         self._refresh_counter -= 1
+        self._save_tick += 1
+        if self._save_tick >= self._save_interval:
+            try:
+                self._save_remaning_time()
+            except Exception:
+                # fail silently to avoid stopping the timer
+                pass
+            self._save_tick = 0
         if self._refresh_counter <= 0:
             self.token_data = self._refresh_token()
             self.token = self.token_data.get("access_token")
@@ -66,6 +76,13 @@ class VoltaClient:
     def _print_remaning_time(self):
         minutes, seconds = divmod(self._refresh_counter, 60)
         print(f"Time until next token refresh: {minutes}m {seconds}s")
+
+    def _save_remaning_time(self):
+        with open(self.token_file, 'r') as f:
+            token_data = json.load(f)
+        token_data['expires_in'] = self._refresh_counter
+        with open(self.token_file, 'w') as f:
+            json.dump(token_data, f)
 
     def stop_background_refresh(self):
         if self._refresh_timer is not None:

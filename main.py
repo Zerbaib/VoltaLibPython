@@ -1,8 +1,8 @@
 import time
 
-from VoltaLibPython import VoltaClient
+from VoltaLibPython import VoltaClient, client
 
-def main():
+def test_timing_refresh():
     client = VoltaClient()
     while True:
         client.test()
@@ -12,4 +12,8 @@ def main():
             time.sleep(1)
         print(" " * 40, end="\r", flush=True)
 
-main()
+def test_fonction_client():
+    client = VoltaClient()
+    client._print_remaning_time()
+
+test_timing_refresh()
