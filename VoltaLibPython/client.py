@@ -204,17 +204,20 @@ class VoltaClient:
             raise APIError(f"POST request failed: {response.status_code} - {response.text}")
         return response.json()
 
-    def _delete(self, endpoint: str, _retry: bool = True) -> Any:
+    def _delete(
+        self, endpoint: str, data: Optional[dict[str, Any]] = None, _retry: bool = True,
+    ) -> Any:
         url = f"{self.base_url}{endpoint}"
         response = self._session.delete(
-            url, headers=self._auth_headers(), timeout=DEFAULT_TIMEOUT
+            url, headers=self._auth_headers(), json=data, timeout=DEFAULT_TIMEOUT
         )
         if response.status_code == 401 and _retry:
             self._handle_unauthorized()
-            return self._delete(endpoint, _retry=False)
+            return self._delete(endpoint, data, _retry=False)
         if response.status_code != 200:
             raise APIError(f"DELETE request failed: {response.status_code} - {response.text}")
         return response.json()
+
 
     # -- Sous-espaces ---------------------------------------------------
 
