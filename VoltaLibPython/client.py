@@ -2,6 +2,8 @@ import requests
 import json
 import time
 import os
+import hmac
+import hashlib
 from threading import Timer
 from dotenv import load_dotenv
 from .exceptions import APIError
@@ -89,6 +91,65 @@ class VoltaClient:
             self._refresh_timer.cancel()
             self._refresh_timer = None
 
+    class GET:
+        def __init__(self):
+            self.client = VoltaClient()
+
+        def GETrequests(self, endpoint: str, params: str = None):
+            """
+            make a GET request to the Volta API with the provided endpoint and optional parameters.
+            """
+            if params:
+                url = f"{self.client.base_url}{endpoint}/{params}"
+            else:
+                url = f"{self.client.base_url}{endpoint}"
+            headers = {"Authorization": f"Bearer {self.client.token}"}
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                raise APIError(f"GET request failed: {response.status_code} - {response.text}")
+        class Library:
+            def __init__(self):
+                self.client = VoltaClient()
+                self.endpoint = "/api/v1/library"
+                self.GETrequests = self.client.GET().GETrequests
+            def tracks(self):
+                """
+                Get the list of tracks from the Volta API.
+                """
+                endpoint = f"{self.endpoint}/tracks"
+                return self.GETrequests(endpoint)
+            def albums(self):
+                """
+                Get the list of albums from the Volta API.
+                """
+                endpoint = f"{self.endpoint}/albums"
+                return self.GETrequests(endpoint)
+            def artists(self):
+                """
+                Get the list of artists from the Volta API.
+                """
+                endpoint = f"{self.endpoint}/artists"
+                return self.GETrequests(endpoint)
+            def artist_albums(self, id: str):
+                """
+                Get the list of albums for a specific artist from the Volta API.
+                """
+                endpoint = f"{self.endpoint}/artists/{id}/albums"
+                return self.GETrequests(endpoint)
+            def artist_tracks(self, id: str):
+                """
+                Get the list of tracks for a specific artist from the Volta API.
+                """
+                endpoint = f"{self.endpoint}/artists/{id}/tracks"
+                return self.GETrequests(endpoint)
+            def playlists(self, id: str = None):
+                """
+                Get the list of playlists from the Volta API.
+                """
+                endpoint = f"{self.endpoint}/playlists"
+                return self.GETrequests(endpoint, id)
     
     def test(self):
         print("Test function in VoltaClient called.")
@@ -97,4 +158,3 @@ class VoltaClient:
         print(f"Client ID: {self.client_id}")
         print(f"Client Secret: {self.client_secret}")
         print(f"Token: {self.token}")
-

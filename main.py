@@ -14,6 +14,6 @@ def test_timing_refresh():
 
 def test_fonction_client():
     client = VoltaClient()
-    client._print_remaning_time()
+    print(client.GET().Library().tracks())
 
-test_timing_refresh()
+test_fonction_client()
