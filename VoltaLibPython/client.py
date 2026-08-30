@@ -230,6 +230,7 @@ class VoltaClient:
         def __init__(self, client: "VoltaClient") -> None:
             self.client = client
             self.library = VoltaClient._Library(client)
+            self.catalog = VoltaClient._Catalog(client)
 
         def request(self, endpoint: str) -> Any:
             return self.client._get(endpoint)
@@ -363,3 +364,16 @@ class VoltaClient:
                             playlist.append(item)
                 return playlist
             return result
+
+    class _Catalog:
+        def __init__(self, client: "VoltaClient") -> None:
+            self.client = client
+            self.endpoint = "/api/v1"
+        def search(self, query: str) -> Any:
+            """
+            Search for tracks, albums, artists, and playlists globally.
+
+            Args:
+                query (str): The search query string.
+            """
+            return self.client._get(f"{self.endpoint}/search?q={query}")
