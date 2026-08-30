@@ -21,7 +21,7 @@ you cannot use this for a global use or search.
 VoltaClient.get.library.
 ```
 
-
+---
 ### tracks()
 > Get all liked tracks.
 >
@@ -38,7 +38,7 @@ with VoltaClient() as client:
 ```
 
 
-
+---
 ### albums()
 > Get all liked albums.
 >
@@ -55,7 +55,7 @@ with VoltaClient() as client:
 ```
 
 
-
+---
 ### artists()
 > Get all liked artists.
 >
@@ -72,7 +72,7 @@ with VoltaClient() as client:
 ```
 
 
-
+---
 ### artist_albums()
 > Get all albums of a specific artist by their ID.
 >
@@ -86,7 +86,7 @@ with VoltaClient() as client:
 ```
 
 
-
+---
 ### artist_tracks()
 > Get all tracks of a specific artist by their ID.
 >
@@ -100,7 +100,7 @@ with VoltaClient() as client:
 ```
 
 
-
+---
 ### playlists()
 > Get all liked playlists or a specific playlist by ID.
 >
@@ -135,6 +135,7 @@ you cannot use this for fetch your data like before
 VoltaClient.get.catalog.
 ```
 
+---
 ### search()
 > Search for tracks, albums, artists, and playlists globally.
 
