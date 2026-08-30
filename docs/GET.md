@@ -28,7 +28,7 @@ with VoltaClient() as client:
     client.git.library.tracks("Song Title") # Search all match with the title in your liked song
 ```
 
-<br><br>
+
 
 ### albums()
 > Get all liked albums.
@@ -45,7 +45,7 @@ with VoltaClient() as client:
     client.git.library.tracks("Album Title") # Search all match with the title album in your liked song
 ```
 
-<br><br>
+
 
 ### artists()
 > Get all liked artists.
@@ -62,7 +62,7 @@ with VoltaClient() as client:
     client.git.library.tracks("Artist name") # Search all match with the artists name in your followed
 ```
 
-<br><br>
+
 
 ### Soon ..
 #### I need to finish the doc
