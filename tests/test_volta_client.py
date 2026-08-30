@@ -1,25 +1,20 @@
 """
-Tests pour VoltaClient.
+Tests du cycle de vie de VoltaClient : chargement/sauvegarde du token,
+arrêt du thread de fond, context manager. Ces tests ne sont pas liés à un
+verbe HTTP en particulier (contrairement à test_get.py et
+test_post_put_delete.py).
 
-Lancer avec : pytest tests/ -v
+Lancer avec : pytest tests/test_client_lifecycle.py -v
 """
 
 from __future__ import annotations
 
 import json
-import time
 
-import pytest
-
-from VoltaLibPython.exceptions import APIError
 from VoltaLibPython.client import VoltaClient
 
 from .conftest import FakeResponse
 
-
-# ---------------------------------------------------------------------------
-# Chargement / sauvegarde du token
-# ---------------------------------------------------------------------------
 
 class TestTokenLoading:
     def test_load_token_reads_existing_file_without_network_call(
@@ -92,218 +87,6 @@ class TestSaveRemainingTime:
         assert client._closed is True
         assert fake_session.closed is True
 
-
-# ---------------------------------------------------------------------------
-# GET
-# ---------------------------------------------------------------------------
-
-class TestGet:
-    def test_get_success_returns_json(self, make_client, fake_session):
-        client = make_client()
-        fake_session.get_responses.append(FakeResponse(200, {"tracks": ["a", "b"]}))
-
-        result = client.get.library.tracks()
-
-        assert result == {"tracks": ["a", "b"]}
-        method, url, headers, params = fake_session.calls[0]
-        assert method == "GET"
-        assert url == f"{client.base_url}/api/v1/library/tracks"
-        assert headers["Authorization"] == "Bearer initial_token"
-
-    def test_get_non_200_raises_api_error(self, make_client, fake_session):
-        client = make_client()
-        fake_session.get_responses.append(
-            FakeResponse(500, text="internal error")
-        )
-
-        with pytest.raises(APIError):
-            client.get.library.tracks()
-
-    def test_get_401_refreshes_token_and_retries_transparently(
-        self, make_client, fake_session
-    ):
-        client = make_client({"access_token": "old_token", "expires_in": 3600})
-
-        # 1er appel : jeton refusé
-        fake_session.get_responses.append(
-            FakeResponse(401, text='{"detail":"Invalid token"}')
-        )
-        # refresh de token déclenché en interne
-        fake_session.post_responses.append(
-            FakeResponse(200, {"access_token": "new_token", "expires_in": 3600})
-        )
-        # 2e appel (après refresh) : succès
-        fake_session.get_responses.append(FakeResponse(200, {"tracks": []}))
-
-        result = client.get.library.tracks()  # ne doit lever aucune exception
-
-        assert result == {"tracks": []}
-        assert client.token == "new_token"
-
-        get_calls = [c for c in fake_session.calls if c[0] == "GET"]
-        assert len(get_calls) == 2
-        assert get_calls[0][2]["Authorization"] == "Bearer old_token"
-        assert get_calls[1][2]["Authorization"] == "Bearer new_token"
-
-    def test_get_401_twice_raises_after_single_retry(self, make_client, fake_session):
-        client = make_client({"access_token": "old_token", "expires_in": 3600})
-
-        # Le jeton reste invalide même après refresh (ex: clé révoquée).
-        fake_session.get_responses.append(FakeResponse(401, text="invalid"))
-        fake_session.post_responses.append(
-            FakeResponse(200, {"access_token": "new_token", "expires_in": 3600})
-        )
-        fake_session.get_responses.append(FakeResponse(401, text="invalid"))
-
-        with pytest.raises(APIError):
-            client.get.library.tracks()
-
-        # Une seule tentative de refresh, une seule retentative de la requête.
-        get_calls = [c for c in fake_session.calls if c[0] == "GET"]
-        assert len(get_calls) == 2
-
-    def test_playlists_without_id_lists_all(self, make_client, fake_session):
-        client = make_client()
-        fake_session.get_responses.append(FakeResponse(200, {"playlists": []}))
-
-        client.get.library.playlists()
-
-        _, url, _, _ = fake_session.calls[0]
-        assert url.endswith("/api/v1/library/playlists")
-
-    def test_playlists_with_id_gets_single_playlist(self, make_client, fake_session):
-        client = make_client()
-        fake_session.get_responses.append(FakeResponse(200, {"id": "pl_123"}))
-
-        client.get.library.playlists(id="pl_123")
-
-        _, url, _, _ = fake_session.calls[0]
-        assert url.endswith("/api/v1/library/playlists/pl_123")
-
-    @pytest.mark.parametrize(
-        "method_name, args, expected_suffix",
-        [
-            ("tracks", (), "/tracks"),
-            ("albums", (), "/albums"),
-            ("artists", (), "/artists"),
-            ("artist_albums", ("artist_1",), "/artists/artist_1/albums"),
-            ("artist_tracks", ("artist_1",), "/artists/artist_1/tracks"),
-        ],
-    )
-    def test_library_get_endpoints_hit_expected_url(
-        self, make_client, fake_session, method_name, args, expected_suffix
-    ):
-        client = make_client()
-        fake_session.get_responses.append(FakeResponse(200, {}))
-
-        getattr(client.get.library, method_name)(*args)
-
-        _, url, _, _ = fake_session.calls[0]
-        assert url.endswith(f"/api/v1/library{expected_suffix}")
-
-
-# ---------------------------------------------------------------------------
-# POST
-# ---------------------------------------------------------------------------
-
-class TestPost:
-    def test_post_track_success(self, make_client, fake_session):
-        client = make_client()
-        fake_session.post_responses.append(FakeResponse(200, {"id": "t1"}))
-
-        result = client.post.track({"track_id": "t1"})
-
-        assert result == {"id": "t1"}
-        method, url, headers, payload = fake_session.calls[0]
-        assert method == "POST"
-        assert url.endswith("/api/v1/library/tracks")
-        assert payload == {"track_id": "t1"}
-        assert headers["Authorization"] == "Bearer initial_token"
-
-    def test_post_401_refreshes_and_retries(self, make_client, fake_session):
-        client = make_client({"access_token": "old_token", "expires_in": 3600})
-
-        fake_session.post_responses.append(FakeResponse(401, text="invalid"))
-        fake_session.post_responses.append(
-            FakeResponse(200, {"access_token": "new_token", "expires_in": 3600})
-        )
-        fake_session.post_responses.append(FakeResponse(200, {"id": "t1"}))
-
-        result = client.post.track({"track_id": "t1"})
-
-        assert result == {"id": "t1"}
-        assert client.token == "new_token"
-
-    def test_post_non_200_raises_api_error(self, make_client, fake_session):
-        client = make_client()
-        fake_session.post_responses.append(FakeResponse(400, text="bad request"))
-
-        with pytest.raises(APIError):
-            client.post.track({"track_id": "t1"})
-
-    def test_post_request_generic_endpoint(self, make_client, fake_session):
-        client = make_client()
-        fake_session.post_responses.append(FakeResponse(200, {"ok": True}))
-
-        result = client.post.request("/api/v1/library/playlists", {"name": "Roadtrip"})
-
-        assert result == {"ok": True}
-        _, url, _, payload = fake_session.calls[0]
-        assert url.endswith("/api/v1/library/playlists")
-        assert payload == {"name": "Roadtrip"}
-
-
-# ---------------------------------------------------------------------------
-# DELETE
-# ---------------------------------------------------------------------------
-
-class TestDelete:
-    def test_delete_track_success(self, make_client, fake_session):
-        client = make_client()
-        fake_session.delete_responses.append(FakeResponse(200, {"deleted": True}))
-
-        result = client.delete.track("t1")
-
-        assert result == {"deleted": True}
-        method, url, headers, _ = fake_session.calls[0]
-        assert method == "DELETE"
-        assert url.endswith("/api/v1/library/tracks/t1")
-        assert headers["Authorization"] == "Bearer initial_token"
-
-    def test_delete_401_refreshes_and_retries(self, make_client, fake_session):
-        client = make_client({"access_token": "old_token", "expires_in": 3600})
-
-        fake_session.delete_responses.append(FakeResponse(401, text="invalid"))
-        fake_session.post_responses.append(
-            FakeResponse(200, {"access_token": "new_token", "expires_in": 3600})
-        )
-        fake_session.delete_responses.append(FakeResponse(200, {"deleted": True}))
-
-        result = client.delete.track("t1")
-
-        assert result == {"deleted": True}
-        assert client.token == "new_token"
-
-    def test_delete_non_200_raises_api_error(self, make_client, fake_session):
-        client = make_client()
-        fake_session.delete_responses.append(FakeResponse(404, text="not found"))
-
-        with pytest.raises(APIError):
-            client.delete.track("unknown_id")
-
-    def test_delete_request_sends_body(self, make_client, fake_session):
-        client = make_client()
-        fake_session.delete_responses.append(FakeResponse(200, {"ok": True}))
-
-        client.delete.request("/api/v1/library/playlists/pl1/tracks/t1", {"reason": "cleanup"})
-
-        _, _, _, payload = fake_session.calls[0]
-        assert payload == {"reason": "cleanup"}
-
-
-# ---------------------------------------------------------------------------
-# Thread-safety légère du token
-# ---------------------------------------------------------------------------
 
 class TestTokenThreadSafety:
     def test_auth_headers_reflects_token_after_manual_refresh(self, make_client, fake_session):
