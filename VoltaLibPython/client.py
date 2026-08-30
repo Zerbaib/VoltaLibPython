@@ -207,24 +207,20 @@ class VoltaClient:
         def __init__(self, client: "VoltaClient") -> None:
             self.client = client
             self.endpoint = "/api/v1/library"
- 
+
         def tracks(self) -> Any:
             return self.client._get(f"{self.endpoint}/tracks")
- 
         def albums(self) -> Any:
             return self.client._get(f"{self.endpoint}/albums")
- 
         def artists(self) -> Any:
             return self.client._get(f"{self.endpoint}/artists")
- 
         def artist_albums(self, id: str) -> Any:
             return self.client._get(f"{self.endpoint}/artists/{id}/albums")
- 
         def artist_tracks(self, id: str) -> Any:
             return self.client._get(f"{self.endpoint}/artists/{id}/tracks")
- 
         def playlists(self, id: str = None) -> Any:
             if id:
                 return self.client._get(f"{self.endpoint}/playlists/{id}")
             else:
                 return self.client._get(f"{self.endpoint}/playlists")
+        

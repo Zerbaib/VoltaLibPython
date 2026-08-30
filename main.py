@@ -10,10 +10,16 @@ def main():
         #artists_albums = client.get.library.artist_albums("m")
         #artists_tracks = client.get.library.artist_tracks("m")
         #playlists = client.get.library.playlists()
-        playlists_id = client.get.library.playlists("3d4aefb7-0a8b-43ac-9f91-6fc4f1dbb62f")
+        #playlists_tracks = client.get.library.playlist_tracks("3d4aefb7-0a8b-43ac-9f91-6fc4f1dbb62f")
+        
+        client.post.track({
+            "id": "11111111-1111-1111-1111-111111111111",
+            "name": "Test Track",
+            "artist": "Test Artist",
+            "album": "Test Album",
+            "duration": 180,
+        })
 
-        with open("temp.json", "w", encoding="utf-8") as f:
-                    json.dump(playlists_id, f, indent=4)
         pass
 
 main()
