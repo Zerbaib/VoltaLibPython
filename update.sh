@@ -15,6 +15,6 @@ if [[ ! -f pyproject.toml || ! -f setup.py ]]; then
 fi
 
 sed -i -E "s/(version\s*=\s*\")[^\"]*(\")/\1${VERSION}\2/" pyproject.toml
-sed -i -E "s/(version\s*=\s*['\"])[][^'\"]*(['\"])/\1${VERSION}\2/" setup.py
+sed -i -E "s/(version\s*=\s*['\"])[^'\"]*(['\"])/\1${VERSION}\2/" setup.py
 
 echo "Updated version to ${VERSION}"
