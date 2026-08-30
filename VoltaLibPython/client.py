@@ -63,6 +63,7 @@ class VoltaClient:
         # VoltaClient créé à chaque accès).
         self.get = self._GET(self)
         self.post = self._POST(self)
+        self.put = self._PUT(self)
         self.delete = self._DELETE(self)
 
     # -- Gestion du token -------------------------------------------------
@@ -82,20 +83,17 @@ class VoltaClient:
         token_data = response.json()
         self._save_token(token_data)
         return token_data
-
     def _save_token(self, token_data: dict[str, Any]) -> None:
         directory = os.path.dirname(self.token_file)
         if directory:
             os.makedirs(directory, exist_ok=True)
         with open(self.token_file, "w") as f:
             json.dump(token_data, f, indent=4)
-
     def _load_token(self) -> dict[str, Any]:
         if os.path.exists(self.token_file):
             with open(self.token_file, "r") as f:
                 return json.load(f)
         return self._refresh_token()
-
     def _start_background_refresh(self) -> None:
         if self._refresh_timer is not None:
             self._refresh_timer.cancel()
@@ -104,13 +102,11 @@ class VoltaClient:
         self._refresh_timer = threading.Timer(delay, self._background_refresh_tick)
         self._refresh_timer.daemon = True
         self._refresh_timer.start()
-
     def _remaining_seconds(self) -> int:
         """Temps restant (en secondes) avant l'expiration réelle du token,
         calculé à partir d'une horloge monotone (insensible aux changements
         d'heure système)."""
         return max(int(self._expiry_deadline - time.monotonic()), 0)
-
     def _save_remaining_time(self) -> None:
         """Met à jour `expires_in` dans le fichier de token avec le temps
         restant réel, plutôt que la valeur d'origine renvoyée par l'API.
@@ -124,7 +120,6 @@ class VoltaClient:
             self._save_token(token_data_copy)
         except Exception:
             logger.exception("Impossible de sauvegarder le temps restant du token")
-
     def _background_refresh_tick(self) -> None:
         try:
             token_data = self._refresh_token()
@@ -137,7 +132,6 @@ class VoltaClient:
             self.refresh_interval = 30
         if not self._closed:
             self._start_background_refresh()
-
     def stop_background_refresh(self) -> None:
         if self._closed:
             return  # déjà arrêté (évite une double sauvegarde via atexit + __exit__)
@@ -146,14 +140,11 @@ class VoltaClient:
             self._refresh_timer.cancel()
             self._refresh_timer = None
         self._save_remaining_time()
-
     def __enter__(self) -> "VoltaClient":
         return self
-
     def __exit__(self, *exc_info: object) -> None:
         self.stop_background_refresh()
         self._session.close()
-
     def _auth_headers(self) -> dict[str, str]:
         with self._token_lock:
             token = self.token
@@ -189,7 +180,6 @@ class VoltaClient:
         if response.status_code != 200:
             raise APIError(f"GET request failed: {response.status_code} - {response.text}")
         return response.json()
-
     def _post(
         self, endpoint: str, data: dict[str, Any], _retry: bool = True
     ) -> Any:
@@ -203,7 +193,19 @@ class VoltaClient:
         if response.status_code != 200:
             raise APIError(f"POST request failed: {response.status_code} - {response.text}")
         return response.json()
-
+    def _put(
+        self, endpoint: str, data: dict[str, Any], _retry: bool = True
+    ) -> Any:
+        url = f"{self.base_url}{endpoint}"
+        response = self._session.put(
+            url, headers=self._auth_headers(), json=data, timeout=DEFAULT_TIMEOUT
+        )
+        if response.status_code == 401 and _retry:
+            self._handle_unauthorized()
+            return self._put(endpoint, data, _retry=False)
+        if response.status_code != 200:
+            raise APIError(f"PUT request failed: {response.status_code} - {response.text}")
+        return response.json()
     def _delete(
         self, endpoint: str, data: Optional[dict[str, Any]] = None, _retry: bool = True,
     ) -> Any:
@@ -231,7 +233,6 @@ class VoltaClient:
 
         def request(self, endpoint: str) -> Any:
             return self.client._get(endpoint)
-
     class _POST:
         def __init__(self, client: "VoltaClient") -> None:
             self.client = client
@@ -241,7 +242,12 @@ class VoltaClient:
 
         def track(self, data: dict[str, Any]) -> Any:
             return self.client._post("/api/v1/library/tracks", data)
+    class _PUT:
+        def __init__(self, client: "VoltaClient") -> None:
+            self.client = client
 
+        def request(self, endpoint: str, data: dict[str, Any]) -> Any:
+            return self.client._put(endpoint, data)
     class _DELETE:
         def __init__(self, client: "VoltaClient") -> None:
             self.client = client
