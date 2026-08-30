@@ -7,6 +7,7 @@
     - [artist_albums()](#artist_albums)
     - [artist_tracks()](#artist_tracks)
   * [playlists()](#playlists)
+* [In global app](#get-in-global-app)
 
 
 ## GET in your library
@@ -114,3 +115,14 @@ with VoltaClient() as client:
     client.get.library.playlists(search="Playlist name") # Fetch every match with the research
     client.get.library.playlists(id="Playlist id")       # Fetch all data and tracks in one playlist
 ```
+
+
+
+
+
+## GET in global app
+
+Fetch data from global,
+you cannot use this for fetch your data like before
+
+### Soon
