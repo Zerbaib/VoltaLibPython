@@ -8,6 +8,7 @@
     - [artist_tracks()](#artist_tracks)
   * [playlists()](#playlists)
 * [In global app](#get-in-global-app)
+  * [search()](#search)
 
 
 ## GET in your library
@@ -15,6 +16,10 @@
 Fetch many data in your library, 
 you cannot use this for a global use or search.
 
+#### Base:
+```python
+VoltaClient.get.library.
+```
 
 
 ### tracks()
@@ -125,4 +130,20 @@ with VoltaClient() as client:
 Fetch data from global,
 you cannot use this for fetch your data like before
 
-### Soon
+#### Base:
+```python
+VoltaClient.get.catalog.
+```
+
+### search()
+> Search for tracks, albums, artists, and playlists globally.
+
+> Args:
+> - query (str): The search query string.
+
+#### Use:
+```python
+with VoltaClient() as client:
+    client.get.catalog.search("Your query") # Search tracks, artists, albums
+
+```
