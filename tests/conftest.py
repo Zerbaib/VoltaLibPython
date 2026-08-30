@@ -42,6 +42,7 @@ class FakeSession:
     def __init__(self) -> None:
         self.get_responses: list[FakeResponse] = []
         self.post_responses: list[FakeResponse] = []
+        self.put_responses: list[FakeResponse] = []
         self.delete_responses: list[FakeResponse] = []
         self.calls: list[tuple] = []  # (method, url, headers, payload)
         self.closed = False
@@ -58,6 +59,12 @@ class FakeSession:
         if not self.post_responses:
             raise AssertionError(f"Aucune réponse POST simulée en attente pour {url}")
         return self.post_responses.pop(0)
+
+    def put(self, url, headers=None, json=None, timeout=None):
+        self.calls.append(("PUT", url, headers, json))
+        if not self.put_responses:
+            raise AssertionError(f"Aucune réponse PUT simulée en attente pour {url}")
+        return self.put_responses.pop(0)
 
     def delete(self, url, headers=None, json=None, timeout=None):
         self.calls.append(("DELETE", url, headers, json))
