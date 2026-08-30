@@ -1,9 +1,12 @@
 # GET method
 # Tables
-* In your library
+* [In your library](#get-in-your-library)
   * [tracks()](#tracks)
   * [albums()](#albums)
   * [artists()](#artists)
+    - [artist_albums()](#artist_albums)
+    - [artist_tracks()](#artist_tracks)
+  * [playlists()](#playlists)
 
 
 ## GET in your library
@@ -64,5 +67,50 @@ with VoltaClient() as client:
 
 
 
-### Soon ..
-#### I need to finish the doc
+### artist_albums()
+> Get all albums of a specific artist by their ID.
+>
+> Args:
+> - id (str): The ID of the artist.
+
+#### Use:
+```python
+with VoltaClient() as client:
+    client.get.library.artist_albums("Artist id") # Fetch all artist albums
+```
+
+
+
+### artist_tracks()
+> Get all tracks of a specific artist by their ID.
+>
+> Args:
+> - id (str): The ID of the artist.
+
+#### Use:
+```python
+with VoltaClient() as client:
+    client.get.library.artist_tracks("Artist id") # Fetch all artist tracks
+```
+
+
+
+### playlists()
+> Get all liked playlists or a specific playlist by ID.
+>
+> If a search string is provided, filter the playlists by name containing the search string (case-insensitive).
+> If both search and id are provided, a ValueError will be raised.
+>
+> Args:
+> - search (str, optional): A string to filter playlists by name. Defaults to None.
+>   - search is just for finding playlists by name, while id is for fetching a specific playlist.
+> - id (str, optional): The ID of a specific playlist. Defaults to None.
+>   - id is for fetching all data and tracks of a specific playlist, while search is just for finding playlists by name.
+
+#### Use:
+```python
+with VoltaClient() as client:
+    client.get.library.playlists()                       # Fetch all your playlists
+    client.get.library.playlists(search="Playlist name") # Fetch every match with the research
+    client.get.library.playlists(id="Playlist id")       # Fetch all data and tracks in one playlist
+```
