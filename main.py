@@ -1,19 +1,14 @@
-import time
+from VoltaLibPython import VoltaClient
 
-from VoltaLibPython import VoltaClient, client
+def main():
+    with VoltaClient() as client:
+        #tracks = client.get.library.tracks()
+        #albums = client.get.library.albums()
+        #artists = client.get.library.artists()
+        #artists_albums = client.get.library.artist_albums("sexiondassaut")
+        #artists_tracks = client.get.library.artist_tracks("sexiondassaut")
+        #playlists = client.get.library.playlists()
+        #playlists_id = client.get.library.playlists("3d4aefb7-0a8b-43ac-9f91-6fc4f1dbb62f")
+        pass
 
-def test_timing_refresh():
-    client = VoltaClient()
-    while True:
-        client.test()
-        client._print_remaning_time()
-        for remaining in range(60, 0, -1):
-            print(f"Refreshing in {remaining} seconds", end="\r", flush=True)
-            time.sleep(1)
-        print(" " * 40, end="\r", flush=True)
-
-def test_fonction_client():
-    client = VoltaClient()
-    print(client.POST().Library().tracks({"track_id": ""}))
-
-test_fonction_client()
+main()
