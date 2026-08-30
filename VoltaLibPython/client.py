@@ -88,7 +88,7 @@ class VoltaClient:
         if directory:
             os.makedirs(directory, exist_ok=True)
         with open(self.token_file, "w") as f:
-            json.dump(token_data, f)
+            json.dump(token_data, f, indent=4)
  
     def _load_token(self) -> dict[str, Any]:
         if os.path.exists(self.token_file):
@@ -190,8 +190,8 @@ class VoltaClient:
             self.client = client
             self.library = VoltaClient._Library(client)
  
-        def request(self, endpoint: str, params: Optional[dict[str, Any]] = None) -> Any:
-            return self.client._get(endpoint, params)
+        def request(self, endpoint: str) -> Any:
+            return self.client._get(endpoint)
  
     class _POST:
         def __init__(self, client: "VoltaClient") -> None:
