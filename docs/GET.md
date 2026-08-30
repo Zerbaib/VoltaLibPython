@@ -1,9 +1,68 @@
-| Function                                      | Utility                         | Output                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-| --------------------------------------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| client.get.library.tracks()                   | Fetch all liked song            | [{"id": "id",<br>"title": "title",<br>"artist": "artist",<br>"artist_id": "artistid",<br>"album": "album",<br>"album_id": "albumid",<br>"cover_url": "url",<br>"duration_ms": 000000,<br>"added_at": "timestamp",<br>"in_library": true/false}]                                                                                                                                                                                                                 |
-| client.get.library.albums()                   | Fetch all your albums           | [{"id": "id",<br>"title": "title",<br>"artist": "artist",<br>"cover_url": "url",<br>"release_date": "01/01/2026",<br>"track_count": 1}]                                                                                                                                                                                                                                                                                                                         |
-| client.get.library.artists()                  | Fetch all artists followed      | [{"id": "id",<br>"name": "name",<br>"picture_url": "url",<br>"album_count": 1,<br>"track_count": 1}]                                                                                                                                                                                                                                                                                                                                                            |
-| client.get.library.artist_albums("artist_id") | Fetch all album from one artist | [{"id": "id",<br>"title": "title",<br>"artist": "artist",<br>"cover_url": "url",<br>"release_date": "01/01/2026",<br>"track_count": 1}]                                                                                                                                                                                                                                                                                                                         |
-| client.get.library.artist_tracks("artist_id") | Fetch all song from one artist  | [{"id": "id",<br>"title": "title",<br>"artist": "artist0,artist1",<br>"artist_id": "artistid",<br>"album": "album",<br>"album_id": "albumid",<br>"cover_url": "url",<br>"duration_ms": 00000,<br>"added_at": "timestamp"}]                                                                                                                                                                                                                                      |
-| client.get.library.playlists()                | Fetch all your playlist         | [{<br>"id": "id",<br>"name": "name",<br>"user_id": "userid",<br>"description": "description",<br>"cover_url": "url",<br>"is_public": 0/1,<br>"created_at": "timestamp",<br>"updated_at": "timestamp",<br>"track_count": 1,<br>"total_duration_ms": 0000<br>}]                                                                                                                                                                                                   |
-| client.get.library.playlists("playlist_id")   | Fetch all info of one playlist  | {"id": "id",<br>"name": "name",<br>"description": "description",<br>"user_id": "userid",<br>"cover_url": "url",<br>"is_public": 0/1,<br>"is_owner": true/false,<br>"can_edit": true/false,<br>"tracks": [{<br>"id": "id",<br>"title": "title",<br>"artist": "artist",<br>"artist_id": "artistid",<br>"album": "album",<br>"album_id": "albumid",<br>"cover_url": "url",<br>"duration_ms": 0000,<br>"added_at": "timestamp",<br>"playlist_track_id": "id"<br>}]} |
+# GET method
+# Tables
+* In your library
+  * [tracks()](#tracks)
+  * [albums()](#albums)
+  * [artists()](#artists)
+
+
+## GET in your library
+
+Fetch many data in your library, 
+you cannot use this for a global use or search.
+
+<br><br>
+
+### tracks()
+> Get all liked tracks.
+>
+> If a search string is provided, filter the tracks by title containing the search string (case-insensitive).
+>
+> Args:
+> - search (str, optional): A string to filter tracks by title. Defaults to None.
+
+#### Use:
+```python
+with VoltaClient() as client:
+    client.get.library.tracks()             # Fetch all liked song
+    client.git.library.tracks("Song Title") # Search all match with the title in your liked song
+```
+
+<br><br>
+
+### albums()
+> Get all liked albums.
+>
+> If a search string is provided, filter the albums by title containing the search string (case-insensitive).
+>
+> Args:
+> - search (str, optional): A string to filter albums by title. Defaults to None.
+
+#### Use:
+```python
+with VoltaClient() as client:
+    client.get.library.albums()              # Fetch all album in your liked song
+    client.git.library.tracks("Album Title") # Search all match with the title album in your liked song
+```
+
+<br><br>
+
+### artists()
+> Get all liked artists.
+>
+> If a search string is provided, filter the artists by name containing the search string (case-insensitive).
+>
+> Args:
+> - search (str, optional): A string to filter artists by name. Defaults to None.
+
+#### Use:
+```python
+with VoltaClient() as client:
+    client.get.library.artists()             # Fetch all artists followed
+    client.git.library.tracks("Artist name") # Search all match with the artists name in your followed
+```
+
+<br><br>
+
+### Soon ..
+#### I need to finish the doc
