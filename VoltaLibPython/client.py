@@ -150,6 +150,29 @@ class VoltaClient:
                 """
                 endpoint = f"{self.endpoint}/playlists"
                 return self.GETrequests(endpoint, id)
+    class POST:
+        def __init__(self):
+            self.client = VoltaClient()
+
+        def POSTrequests(self, endpoint: str, data: dict):
+            """
+            make a POST request to the Volta API with the provided endpoint and data.
+            """
+            url = f"{self.client.base_url}{endpoint}"
+            headers = {"Authorization": f"Bearer {self.client.token}"}
+            response = requests.post(url, headers=headers, json=data)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                raise APIError(f"POST request failed: {response.status_code} - {response.text}")
+        class Library:
+            def __init__(self):
+                self.client = VoltaClient()
+                self.endpoint = "/api/v1/library"
+                self.POSTrequests = self.client.POST().POSTrequests
+            def tracks(self, data: dict):
+                pass
+
     
     def test(self):
         print("Test function in VoltaClient called.")

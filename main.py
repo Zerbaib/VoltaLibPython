@@ -14,6 +14,6 @@ def test_timing_refresh():
 
 def test_fonction_client():
     client = VoltaClient()
-    print(client.GET().Library().tracks())
+    print(client.POST().Library().tracks({"track_id": ""}))
 
 test_fonction_client()
