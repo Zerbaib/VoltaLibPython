@@ -1,0 +1,20 @@
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "VoltaLib"
+version = "0.2.1"
+description = "VoltaLibPython packaged as VoltaLib"
+requires-python = ">=3.8"
+authors = [ { name = "Zerbaib" } ]
+license = { text = "" }
+dependencies = ["dotenv", "requests"]
+
+[tool.setuptools]
+include-package-data = true
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ["tests", "docs"]
