@@ -9,3 +9,7 @@ __pycache__/
 
 config/
 VoltaLib.egg-info/
+
+changelog.md
+CHANGELOG.md
+changelog.py
